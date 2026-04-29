@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Store, ShoppingCart, CheckCircle2, ShieldCheck, Activity, Loader2, Calendar, Package, Info } from 'lucide-react'
-import { getProvider, getContract } from '../utils/blockchain'
+import { getProvider, getContract, requestAccount } from '../utils/blockchain'
 
 function Pharmacy({ user }) {
   const [inventory, setInventory] = useState([])
@@ -16,8 +16,7 @@ function Pharmacy({ user }) {
     try {
       const provider = getProvider()
       if (!provider) return
-      const signer = await provider.getSigner()
-      const contract = await getContract(signer)
+      const contract = await getContract(provider)
       
       const count = await contract.medicineCount()
       const items = []
@@ -39,6 +38,7 @@ function Pharmacy({ user }) {
   const handleSale = async (id) => {
     setLoading(true)
     try {
+      await requestAccount()
       const provider = getProvider()
       const signer = await provider.getSigner()
       const contract = await getContract(signer)

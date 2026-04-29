@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 // This would be replaced by the actual deployed address from scripts/deploy.js
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; 
+const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const CONTRACT_ABI = [
 	"function addMedicine(string name, string batchNumber, string mfgDate, string expDate) public",
@@ -15,12 +15,27 @@ const CONTRACT_ABI = [
 ];
 
 export const getProvider = () => {
-  if (window.ethereum) {
-    return new ethers.BrowserProvider(window.ethereum);
-  }
-  return null;
+	if (window.ethereum) {
+		return new ethers.BrowserProvider(window.ethereum);
+	}
+	return null;
 };
 
-export const getContract = async (signer) => {
-  return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+export const getContract = async (signerOrProvider) => {
+	return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signerOrProvider);
+};
+
+export const requestAccount = async () => {
+	if (window.ethereum) {
+		try {
+			const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+			return accounts[0];
+		} catch (error) {
+			if (error.code === -32002) {
+				alert("MetaMask is already processing a request. Please open MetaMask and check for a pending notification.");
+			}
+			throw error;
+		}
+	}
+	return null;
 };

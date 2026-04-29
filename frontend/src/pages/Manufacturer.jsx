@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Package, QrCode, Calendar, Info, CheckCircle2, Activity, Loader2, X, ChevronRight } from 'lucide-react'
-import { getProvider, getContract } from '../utils/blockchain'
+import { getProvider, getContract, requestAccount } from '../utils/blockchain'
 import { QRCodeSVG } from 'qrcode.react'
 
 function Manufacturer({ user }) {
@@ -24,8 +24,7 @@ function Manufacturer({ user }) {
     try {
       const provider = getProvider()
       if (!provider) return
-      const signer = await provider.getSigner()
-      const contract = await getContract(signer)
+      const contract = await getContract(provider)
       
       const count = await contract.medicineCount()
       const items = []
@@ -47,6 +46,9 @@ function Manufacturer({ user }) {
     e.preventDefault()
     setLoading(true)
     try {
+      // Ensure MetaMask is connected and handle "already pending" errors
+      await requestAccount()
+      
       const provider = getProvider()
       const signer = await provider.getSigner()
       const contract = await getContract(signer)
@@ -63,7 +65,9 @@ function Manufacturer({ user }) {
       loadMedicines()
     } catch (err) {
       console.error("Error adding medicine:", err)
-      alert("Transaction failed! Ensure your wallet is connected to the correct network.")
+      if (err.code !== -32002) {
+        alert("Transaction failed! Ensure your wallet is connected to the correct network and you have the Manufacturer role.")
+      }
     }
     setLoading(false)
   }

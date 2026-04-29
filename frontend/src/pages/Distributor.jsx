@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Loader2, Truck, MapPin, CheckCircle2, AlertCircle, Package, ArrowRight, Wallet, History } from 'lucide-react'
-import { getProvider, getContract } from '../utils/blockchain'
+import { getProvider, getContract, requestAccount } from '../utils/blockchain'
 
 function Distributor({ user }) {
   const [medicines, setMedicines] = useState([])
@@ -19,8 +19,7 @@ function Distributor({ user }) {
     try {
       const provider = getProvider()
       if (!provider) return
-      const signer = await provider.getSigner()
-      const contract = await getContract(signer)
+      const contract = await getContract(provider)
       
       const count = await contract.medicineCount()
       const items = []
@@ -44,8 +43,7 @@ function Distributor({ user }) {
     setFoundMed(null)
     try {
       const provider = getProvider()
-      const signer = await provider.getSigner()
-      const contract = await getContract(signer)
+      const contract = await getContract(provider)
       const m = await contract.medicines(searchId)
       if (m.name) {
         setFoundMed(m)
@@ -64,6 +62,7 @@ function Distributor({ user }) {
     if (!toAddress) return alert("Please provide a valid receiver wallet address.")
     setLoading(true)
     try {
+      await requestAccount()
       const provider = getProvider()
       const signer = await provider.getSigner()
       const contract = await getContract(signer)
